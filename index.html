@@ -1,0 +1,206 @@
+import React, { useState } from 'react';
+import { Play, RefreshCw, Layers, ArrowRight, AlertCircle, Heart } from 'lucide-react';
+
+export default function App() {
+  // יצירת מערך התחלתי של 40 פריטים (מספרים 1 עד 40)
+  const initialDeck = Array.from({ length: 40 }, (_, i) => i + 1);
+
+  // הגדרת משתני המצב של האפליקציה
+  const [deck, setDeck] = useState(initialDeck);
+  const [currentCard, setCurrentCard] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  // ניהול מסכים והתראות
+  const [currentScreen, setCurrentScreen] = useState('welcome'); // 'welcome' | 'game'
+  const [showResetModal, setShowResetModal] = useState(false);
+
+  // פונקציה להגרלת קלף אקראי
+  const drawCard = () => {
+    if (deck.length === 0) return;
+
+    // הפעלת אנימציה
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 300);
+
+    // בחירת אינדקס אקראי
+    const randomIndex = Math.floor(Math.random() * deck.length);
+    const drawnCard = deck[randomIndex];
+
+    // יצירת חפיסה חדשה ללא הקלף שנבחר
+    const newDeck = deck.filter((_, index) => index !== randomIndex);
+
+    setDeck(newDeck);
+    setCurrentCard(drawnCard);
+  };
+
+  // פונקציה לאיפוס המשחק
+  const resetDeck = () => {
+    setDeck(initialDeck);
+    setCurrentCard(null);
+    setShowResetModal(false); // סגירת המודאל לאחר האיפוס
+  };
+
+  // ----------------------------------------
+  // מסך 1: מסך הפתיחה
+  // ----------------------------------------
+  if (currentScreen === 'welcome') {
+    return (
+      <div dir="rtl" className="min-h-screen bg-sky-50 flex items-center justify-center p-4 font-sans">
+        <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg p-8 md:p-12 border border-sky-100 text-center relative overflow-hidden">
+          
+          {/* אייקון כותרת */}
+          <div className="bg-rose-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Heart className="text-rose-500 w-10 h-10" />
+          </div>
+          
+          <h1 className="text-4xl font-bold text-slate-800 mb-6">קלפי חוסן</h1>
+
+          {/* תיבת הנחיות */}
+          <div className="text-right space-y-6 bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 text-slate-700">
+            <div>
+              <h2 className="font-bold text-lg text-indigo-700 mb-2 flex items-center gap-2">
+                <Layers className="w-5 h-5"/>
+                הנחיות למורה
+              </h2>
+              <p className="leading-relaxed">
+                כלי זה נועד לעורר שיח רגשי, חיבור אישי ופיתוח חוסן בכיתה. השתמשו בקלפים כדי לאפשר לתלמידים לשתף במחשבות וברגשות במרחב בטוח ומכיל. מומלץ להקרין על הלוח.
+              </p>
+            </div>
+            
+            <div className="h-px bg-slate-200 w-full"></div>
+            
+            <div>
+              <h2 className="font-bold text-lg text-rose-600 mb-2 flex items-center gap-2">
+                <Play className="w-5 h-5"/>
+                הנחיות לתלמידים
+              </h2>
+              <p className="leading-relaxed">
+                בכל תור נגריל קלף חדש מהקופה. נתבונן בו יחד, נחשוב מה הוא מזכיר לנו, ונשתף את החברים בתחושות שלנו. כל תשובה היא נכונה!
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setCurrentScreen('game')}
+            className="w-full flex items-center justify-center gap-3 py-4 px-8 rounded-xl font-bold text-xl bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg active:scale-95 transition-all duration-200"
+          >
+            התחל לשחק
+            <ArrowRight className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------------------
+  // מסך 2: מסך המשחק (ההגרלה)
+  // ----------------------------------------
+  return (
+    <div dir="rtl" className="min-h-screen bg-sky-50 flex items-center justify-center p-4 font-sans relative">
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 border border-sky-100">
+
+        {/* כפתור חזרה למסך פתיחה */}
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => setCurrentScreen('welcome')}
+            className="text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 text-sm font-medium"
+          >
+            <ArrowRight className="w-4 h-4" />
+            הנחיות
+          </button>
+        </div>
+
+        {/* כותרת המשחק */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-slate-800">קלפי חוסן</h1>
+          <p className="text-slate-500 mt-2">הגרילו קלף לשיח כיתתי</p>
+        </div>
+
+        {/* תצוגת הקלף הנוכחי */}
+        <div className="flex justify-center mb-8 perspective-1000">
+          <div 
+            className={`w-48 h-64 rounded-2xl flex items-center justify-center text-7xl font-bold transition-all duration-300 shadow-md
+              ${currentCard ? 'bg-gradient-to-br from-rose-400 to-indigo-600 text-white shadow-indigo-200' : 'bg-slate-100 text-slate-300 border-2 border-dashed border-slate-300'}
+              ${isAnimating ? 'scale-95 opacity-80' : 'scale-100 opacity-100'}
+            `}
+          >
+            {currentCard ? currentCard : '?'}
+          </div>
+        </div>
+
+        {/* מונה קלפים נותרים */}
+        <div className="flex items-center justify-center gap-2 mb-8 bg-slate-50 py-3 rounded-xl border border-slate-100">
+          <span className="text-slate-600 font-medium">קלפים שנותרו בקופה:</span>
+          <span className={`font-bold text-xl ${deck.length === 0 ? 'text-red-500' : 'text-sky-600'}`}>
+            {deck.length}
+          </span>
+        </div>
+
+        {/* כפתורי הפעלה */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={drawCard}
+            disabled={deck.length === 0}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 
+              ${deck.length === 0 
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg active:scale-95'
+              }`}
+          >
+            <Play className="w-5 h-5 fill-current" />
+            הגרילו קלף
+          </button>
+
+          <button
+            onClick={() => setShowResetModal(true)}
+            className="sm:w-1/3 flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all duration-200 active:scale-95"
+          >
+            <RefreshCw className="w-5 h-5" />
+            איפוס
+          </button>
+        </div>
+
+        {/* הודעת סיום חפיסה */}
+        {deck.length === 0 && (
+          <div className="mt-6 p-4 bg-rose-50 text-rose-600 rounded-xl text-center font-medium border border-rose-100 animate-pulse">
+            הקופה התרוקנה! כל הכבוד על השיח. לחצו על איפוס כדי להתחיל מחדש.
+          </div>
+        )}
+      </div>
+
+      {/* ----------------------------------------
+          מודאל (חלון קופץ) לאישור איפוס המשחק
+          ---------------------------------------- */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all">
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-rose-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 text-rose-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">איפוס משחק</h3>
+              <p className="text-slate-600 mb-6">
+                האם אתם בטוחים שברצונכם לאפס את הקופה ולהתחיל מחדש?
+              </p>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={resetDeck}
+                  className="flex-1 py-3 px-4 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors"
+                >
+                  כן, התחל מחדש
+                </button>
+                <button
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 py-3 px-4 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+                >
+                  ביטול
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
